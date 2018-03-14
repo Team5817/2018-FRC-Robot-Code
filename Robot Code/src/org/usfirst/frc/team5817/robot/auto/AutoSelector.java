@@ -2,10 +2,12 @@ package org.usfirst.frc.team5817.robot.auto;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import org.usfirst.frc.team5817.robot.auto.OneScaleTwoSwitchSameSide;
+import org.usfirst.frc.team5817.robot.auto.OneSwitchOppositeSide;
+import org.usfirst.frc.team5817.robot.auto.OneSwitchSameSide;
 
 public class AutoSelector extends AutoMode {
 	
-	final AutoMode oneScaleTwoSwitchSameSide = new OneScaleTwoSwitchSameSide();
+	AutoMode selectedAuto;
 	
 	public void selectAuto(){
 		
@@ -15,31 +17,21 @@ public class AutoSelector extends AutoMode {
 		
 		targetOrder = DriverStation.getInstance().getGameSpecificMessage();
 		//if (targetOrder.length() > 0){
-			if (targetOrder == "LRL"){
+			if (targetOrder.charAt(0) == 'R' && targetOrder.charAt(1) == 'R'){
 				
-				System.out.println("LRL");
+				selectedAuto = new OneSwitchOppositeSide();
 				
-			}else if(targetOrder == "LLL"){
+			}else if(targetOrder.charAt(0) == 'R' && targetOrder.charAt(1) == 'L'){
 				
-				if (initialized == false){
-					oneScaleTwoSwitchSameSide.initialize();
-					initialized = true;
-				}
-				oneScaleTwoSwitchSameSide.execute();
-				
-			}else if(targetOrder == "RLR"){
-				
-				System.out.println("RLR");
+				selectedAuto = new OneSwitchOppositeSide();
 				
 			}else if(targetOrder.charAt(0) == 'L' && targetOrder.charAt(1) == 'L'){
-				if (initialized == false){
-					oneScaleTwoSwitchSameSide.initialize();
-					initialized = true;
-				}else{
-					oneScaleTwoSwitchSameSide.execute();
-				}
-				System.out.println("Recieved");
 				
+				selectedAuto = new OneScaleTwoSwitchSameSide();
+
+			}else if(targetOrder.charAt(0) == 'L' && targetOrder.charAt(1) == 'R'){
+				
+				selectedAuto = new OneSwitchSameSide();
 			}else{
 				
 				targetOrder = DriverStation.getInstance().getGameSpecificMessage();
@@ -54,13 +46,13 @@ public class AutoSelector extends AutoMode {
 
 	@Override
 	public void execute() {
-		selectAuto();
-		
+		selectedAuto.execute();
 	}
 
 	@Override
 	public void initialize() {
-		// TODO Auto-generated method stub
+		selectAuto();
+		selectedAuto.initialize();
 		
 	}
 

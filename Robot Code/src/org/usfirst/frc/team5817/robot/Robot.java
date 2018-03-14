@@ -122,7 +122,6 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putNumber("Left Drive Position", drive_.getLeftDrivePosition());
 		SmartDashboard.putNumber("Gyro Angle", navx_.getAngle());
 		SmartDashboard.putBoolean("Gyro Connection", navx_.isConnected());
-		SmartDashboard.putNumber("Arm Motor One", arm_.armMotorOne.getOutputCurrent());
 		SmartDashboard.putNumber("Max Arm Current", arm_.getCurrent());
 		SmartDashboard.putNumber("Max Wrist Current", wrist_.getCurrent());
 
