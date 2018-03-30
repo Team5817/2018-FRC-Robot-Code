@@ -106,6 +106,11 @@ public class Wrist {
 		intakeTwo.set(ControlMode.PercentOutput, -0.6);
 	}
 	
+	public void outtakeValue(double value){
+		intakeOne.set(ControlMode.PercentOutput, -value);
+		intakeTwo.set(ControlMode.PercentOutput, -value);
+	}
+	
 	public void outtakeSlow(){
 		intakeOne.set(ControlMode.PercentOutput, -0.30);
 		intakeTwo.set(ControlMode.PercentOutput, -0.30);

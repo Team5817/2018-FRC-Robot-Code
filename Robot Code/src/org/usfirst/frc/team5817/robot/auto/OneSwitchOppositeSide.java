@@ -178,7 +178,7 @@ public class OneSwitchOppositeSide extends AutoMode {
 			
 		case TURN_2:
 			if(timer.get() <= state.getTime()) {
-				double gyro_correction = 0.1 * (35 - navx_.getAngle());
+				double gyro_correction = 0.1 * (30 - navx_.getAngle());
 				if(Math.abs(gyro_correction) > 0.40) gyro_correction = 0.40 * Math.signum(gyro_correction);
 				drive_.leftSideControl(gyro_correction);
 				drive_.rightSideControl(-gyro_correction);
@@ -254,7 +254,7 @@ public class OneSwitchOppositeSide extends AutoMode {
 			
 		case SPIT:
 			if(timer.get() <= state.getTime()) {
-				wrist_.shoot();
+				wrist_.outtakeSlow();
 			} else {
 				state = State.TURN_4;
 				timer.stop();

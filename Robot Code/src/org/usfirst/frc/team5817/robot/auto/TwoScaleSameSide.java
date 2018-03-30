@@ -9,7 +9,7 @@ import org.usfirst.frc.team5817.robot.Wrist;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class OneScaleTwoSwitchSameSide extends AutoMode {
+public class TwoScaleSameSide extends AutoMode {
 	
 	private final Drive drive_ = Drive.getInstance();
 	private final Controller driverController_ = Controller.getInstance();
@@ -25,12 +25,8 @@ public class OneScaleTwoSwitchSameSide extends AutoMode {
 		DRIVE_TO_SCALE(4.0),
 		TURN_TO_INTAKE_AND_LOWER_ARM(1.0),
 		DRIVE_FORWARD_AND_INTAKE(1.5),
-		DRIVE_BACKWARD_AND_RAISE_ARM(0.75),
-		DRIVE_FORWARD_AND_SHOOT(1.0),
-		DRIVE_BACKWARD_AND_LOWER_INTAKE(1.25),
-		DRIVE_FORWARD_FOR_SECOND_CUBE(1.4),
-		DRIVE_BACKWARD_AND_RAISE_INTAKE_2(1.0),
-		FINAL_DRIVE_FORWARD(1.0),
+		DRIVE_BACKWARD_AND_RAISE_ARM(3.0),
+		SPIT(0.25),
 		END(0.0);
 		
 		double time;
@@ -181,6 +177,7 @@ public class OneScaleTwoSwitchSameSide extends AutoMode {
 					drive_.rightSideControl(right_value);
 				}
 			} else {
+				drive_.zeroSensors();
 				state = State.DRIVE_BACKWARD_AND_RAISE_ARM;
 				timer.stop();
 				timer.reset();
@@ -190,137 +187,40 @@ public class OneScaleTwoSwitchSameSide extends AutoMode {
 			
 		case DRIVE_BACKWARD_AND_RAISE_ARM:
 			if(timer.get() <= state.getTime()) {
-				arm_.setArmPosition(50);
-				wrist_.setWristPosition(1250);
-				wrist_.fingersClose();
-				wrist_.stop();
+				double left_distance_error = -115000 - drive_.getLeftDrivePosition();
+				double right_distance_error = -115000 - drive_.getRightDrivePosition();
+				double gyro_correction = 0.16 * (-19 - navx_.getAngle());
 				
-				if(timer.get() <= 0.45) {
-					drive_.leftSideControl(-0.65);
-					drive_.rightSideControl(-0.65);
-				} else {
-					drive_.leftSideControl(0.0);
-					drive_.rightSideControl(0.0);
+				double left_value = (0.0004 * left_distance_error) + gyro_correction;
+				if(Math.abs(left_value) > 0.65) left_value = Math.signum(left_value) * 0.65;
+				double right_value = (0.0004 * right_distance_error) - gyro_correction;
+				if(Math.abs(right_value) > 0.65) right_value = Math.signum(left_value) * 0.65;
+				
+				if(wrist_.getWristPosition() < 3000) {
+					arm_.setArmPosition(4400);
 				}
-			} else {
-				state = State.DRIVE_FORWARD_AND_SHOOT;
-				timer.stop();
-				timer.reset();
-				timer.start();
-			}
-			break;
-			
-		case DRIVE_FORWARD_AND_SHOOT:
-			if(timer.get() <= state.getTime()) {
-				arm_.setArmPosition(50);
-				wrist_.setWristPosition(1750);
-				wrist_.fingersClose();
+				wrist_.setWristPosition(1850);
 				
 				
-				if(timer.get() <= 0.7) {
-					drive_.leftSideControl(0.6);
-					drive_.rightSideControl(0.6);
-				} else {
-					drive_.leftSideControl(0.0);
-					drive_.rightSideControl(0.0);
-					wrist_.shoot();
-				}
-			} else {
-				state = State.DRIVE_BACKWARD_AND_LOWER_INTAKE;
-				timer.stop();
-				timer.reset();
-				timer.start();
-				drive_.zeroSensors();
-			}
-			break;
-			
-		case DRIVE_BACKWARD_AND_LOWER_INTAKE:
-			if(timer.get() <= state.getTime()) {
-				arm_.setArmPosition(50);
-				wrist_.fingersOpen();
-				
-				/*
-				double error = 0.125 * (-20 - navx_.getAngle());
-				if(Math.abs(error) > 0.7) error = 0.7 * Math.signum(error);
-				drive_.leftSideControl(error);
-				drive_.rightSideControl(-0.1);
-				*/
-				
-				double gyro_correction = 0.05 * (-30 - navx_.getAngle());
-				
-				if(navx_.getAngle() > -29 || navx_.getAngle() < -31){
-					drive_.leftSideControl(-0.60 + gyro_correction);
-					drive_.rightSideControl(-0.1);
-				}else{
-					drive_.leftSideControl(-0.5);
-					drive_.rightSideControl(-0.5);
-				}
-				
-				
-				
-				if(navx_.getAngle() <= -20) {
-					wrist_.setWristPosition(4250);
-				}
-			} else {
-				state = State.DRIVE_FORWARD_FOR_SECOND_CUBE;
-				timer.stop();
-				timer.reset();
-				timer.start();
-			}
-			break;
-			
-		case DRIVE_FORWARD_FOR_SECOND_CUBE:
-			if(timer.get() <= state.getTime()) {
-				double gyro_correction = 0.025 * (-50 - navx_.getAngle());
-				drive_.leftSideControl(0.80 + gyro_correction);
-				drive_.rightSideControl(0.80 - gyro_correction);
-				
-				wrist_.intake();
-				wrist_.setWristPosition(4250);
-				if(timer.get() >= state.getTime() - 0.5) {
+				if(Math.abs(left_distance_error) < 2500 && Math.abs(right_distance_error) < 2500) {
 					wrist_.fingersClose();
+					drive_.leftSideControl(0.0);
+					drive_.rightSideControl(0.0);
+				}else{
+					drive_.leftSideControl(left_value);
+					drive_.rightSideControl(right_value);
 				}
 			} else {
-				state = State.DRIVE_BACKWARD_AND_RAISE_INTAKE_2;
+				state = State.SPIT;
 				timer.stop();
 				timer.reset();
 				timer.start();
 			}
 			break;
 			
-		case DRIVE_BACKWARD_AND_RAISE_INTAKE_2:
+		case SPIT:
 			if(timer.get() <= state.getTime()) {
-				wrist_.stop();
-				arm_.setArmPosition(50);
-				wrist_.setWristPosition(1500);
-				wrist_.fingersClose();
-				
-				double error = 0.125 * (navx_.getAngle());
-				if(Math.abs(error) > 0.9) error = 0.9 * Math.signum(error);
-				drive_.leftSideControl(-0.1);
-				drive_.rightSideControl(error);
-				
-			} else {
-				state = State.FINAL_DRIVE_FORWARD;
-				timer.stop();
-				timer.reset();
-				timer.start();
-			}
-			break;
-			
-		case FINAL_DRIVE_FORWARD:
-			if(timer.get() <= state.getTime()) {
-				arm_.setArmPosition(50);
-				wrist_.setWristPosition(1500);
-				wrist_.intake();
-				
-				drive_.leftSideControl(0.85);
-				drive_.rightSideControl(0.95);
-				
-				if(timer.get() >= state.getTime() - 0.45) {
-					wrist_.shoot();
-					wrist_.fingersOpen();
-				}
+				wrist_.outtakeSlow();
 			} else {
 				state = State.END;
 				timer.stop();

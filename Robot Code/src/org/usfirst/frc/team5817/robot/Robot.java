@@ -149,9 +149,12 @@ public class Robot extends IterativeRobot {
 			position = Position.MANUAL;
 		}else if(driverController_.getYLeft2() > rightDeadZoneXY || driverController_.getYLeft2() < rightNegativeDeadZoneXY){
 			position = Position.MANUAL;
-		}else if(driverController_.getDpad2() == 0){
+		}else if(driverController_.getDpad2() == 0 || driverController_.getDpad() == 0){
 			position = Position.SCALE;
-		}else if (driverController_.getButtonA()) {
+		}else if(driverController_.getDpad2() == 180 || driverController_.getDpad() == 180){
+			position = Position.LOW_PROFILE_SCALE;
+		}
+		else if (driverController_.getButtonA()) {
 			// Preset for picking up a cube off the ground		
 			position = Position.GROUND;
 		}else if(driverController_.getRightBumper()){
@@ -209,7 +212,7 @@ public class Robot extends IterativeRobot {
 				wrist_.setWristPosition(50);
 			}else{
 				arm_.setArmPosition(6600);
-				wrist_.setWristPosition(10000);
+				wrist_.setWristPosition(9000);
 			}
 			break;
 		case SCALEBACK:
@@ -221,7 +224,19 @@ public class Robot extends IterativeRobot {
 				wrist_.setWristPosition(50);
 			}else{
 				arm_.setArmPosition(4400);
-				wrist_.setWristPosition(1750);
+				wrist_.setWristPosition(1850);
+			}
+			break;
+		case LOW_PROFILE_SCALE:
+			if(wrist_.getWristPosition() > 3000 && arm_.getArmPosition() < 1000){
+				wrist_.setWristPosition(50);
+				arm_.setArmPosition(300);
+			}else if(arm_.getArmPosition() < 1500){
+				arm_.setArmPosition(5300);
+				wrist_.setWristPosition(50);
+			}else{
+				arm_.setArmPosition(5300);
+				wrist_.setWristPosition(2700);
 			}
 			break;
 		case CLIMB:
@@ -313,7 +328,9 @@ public class Robot extends IterativeRobot {
 		if (driverController_.getLeftTrigger() > 0.1){
 			wrist_.intake();
 		}else if(driverController_.getRightTrigger() > 0.1){
-			wrist_.outtake();
+			double value = Math.pow(driverController_.getRightTrigger(), 3) * 1.0;
+			value = (driverController_.getRightTrigger() < 0.7) ? 0.3 : value;
+			wrist_.outtakeValue(value);
 		}else{
 			wrist_.stop();
 		}

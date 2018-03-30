@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="Robot Code/src"/>
+	<classpathentry kind="lib" path="Robot Code/build/jars/cscore.jar"/>
+	<classpathentry kind="lib" path="Robot Code/build/jars/CTRE_Phoenix.jar"/>
+	<classpathentry kind="lib" path="Robot Code/build/jars/navx_frc.jar"/>
+	<classpathentry kind="lib" path="Robot Code/build/jars/ntcore.jar"/>
+	<classpathentry kind="lib" path="Robot Code/build/jars/opencv.jar"/>
+	<classpathentry kind="lib" path="Robot Code/build/jars/WPILib.jar"/>
+	<classpathentry kind="lib" path="Robot Code/build/jars/wpiutil.jar"/>
+	<classpathentry kind="lib" path="Robot Code/dist/FRCUserProgram.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="Robot Code/bin"/>
+</classpath>
