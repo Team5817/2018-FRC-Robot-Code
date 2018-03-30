@@ -25,8 +25,8 @@ public class TwoScaleSameSide extends AutoMode {
 		DRIVE_TO_SCALE(4.0),
 		TURN_TO_INTAKE_AND_LOWER_ARM(1.0),
 		DRIVE_FORWARD_AND_INTAKE(1.5),
-		DRIVE_BACKWARD_AND_RAISE_ARM(3.0),
-		SPIT(0.25),
+		DRIVE_BACKWARD_AND_RAISE_ARM(5.0),
+		SPIT(2.0),
 		END(0.0);
 		
 		double time;
@@ -103,12 +103,12 @@ public class TwoScaleSameSide extends AutoMode {
 					
 					drive_.leftSideControl(left_value);
 					drive_.rightSideControl(right_value);
-					arm_.setArmPosition(4500);
+					arm_.setArmPosition(3600);
 					wrist_.setWristPosition(2000);
 				}
 				
 				if(Math.abs(drive_.getLeftDrivePosition()) > 200000) {
-					arm_.setArmPosition(4500);
+					arm_.setArmPosition(3600);
 				}
 				if(Math.abs(drive_.getLeftDrivePosition()) > 220000) {
 					wrist_.setWristPosition(2000);
@@ -121,7 +121,7 @@ public class TwoScaleSameSide extends AutoMode {
 				
 				
 				if(Math.abs(drive_.getLeftDrivePosition()) > 410000) {
-					wrist_.outtakeSlow();
+					wrist_.outtakeValue(0.50);
 				}
 			} else {
 				wrist_.stop();
@@ -158,8 +158,8 @@ public class TwoScaleSameSide extends AutoMode {
 			
 		case DRIVE_FORWARD_AND_INTAKE:
 			if(timer.get() <= state.getTime()) {
-				double left_distance_error = 105000 - drive_.getLeftDrivePosition();
-				double right_distance_error = 105000 - drive_.getRightDrivePosition();
+				double left_distance_error = 95000 - drive_.getLeftDrivePosition();
+				double right_distance_error = 95000 - drive_.getRightDrivePosition();
 				double gyro_correction = 0.16 * (-19 - navx_.getAngle());
 				
 				double left_value = (0.0004 * left_distance_error) + gyro_correction;
@@ -178,6 +178,7 @@ public class TwoScaleSameSide extends AutoMode {
 				}
 			} else {
 				drive_.zeroSensors();
+				wrist_.stop();
 				state = State.DRIVE_BACKWARD_AND_RAISE_ARM;
 				timer.stop();
 				timer.reset();
@@ -187,14 +188,19 @@ public class TwoScaleSameSide extends AutoMode {
 			
 		case DRIVE_BACKWARD_AND_RAISE_ARM:
 			if(timer.get() <= state.getTime()) {
-				double left_distance_error = -115000 - drive_.getLeftDrivePosition();
-				double right_distance_error = -115000 - drive_.getRightDrivePosition();
-				double gyro_correction = 0.16 * (-19 - navx_.getAngle());
+				double left_distance_error = -90000 - drive_.getLeftDrivePosition();
+				double right_distance_error = -90000 - drive_.getRightDrivePosition();
+				double gyro_correction = 0.3 * (-19 - navx_.getAngle());
 				
-				double left_value = (0.0004 * left_distance_error) + gyro_correction;
-				if(Math.abs(left_value) > 0.65) left_value = Math.signum(left_value) * 0.65;
-				double right_value = (0.0004 * right_distance_error) - gyro_correction;
-				if(Math.abs(right_value) > 0.65) right_value = Math.signum(left_value) * 0.65;
+				double left_value = (0.0003 * left_distance_error);
+				if(Math.abs(left_value) > 0.40) left_value = Math.signum(left_value) * 0.40;
+				double right_value = (0.0003 * right_distance_error);
+				if(Math.abs(right_value) > 0.40) right_value = Math.signum(left_value) * 0.40;
+				
+				gyro_correction = (Math.abs(gyro_correction) > 0.1) ? Math.signum(gyro_correction) * 0.1 : gyro_correction;
+				
+				drive_.leftSideControl(left_value + gyro_correction);
+				drive_.rightSideControl(right_value - gyro_correction);
 				
 				if(wrist_.getWristPosition() < 3000) {
 					arm_.setArmPosition(4400);
@@ -202,14 +208,6 @@ public class TwoScaleSameSide extends AutoMode {
 				wrist_.setWristPosition(1850);
 				
 				
-				if(Math.abs(left_distance_error) < 2500 && Math.abs(right_distance_error) < 2500) {
-					wrist_.fingersClose();
-					drive_.leftSideControl(0.0);
-					drive_.rightSideControl(0.0);
-				}else{
-					drive_.leftSideControl(left_value);
-					drive_.rightSideControl(right_value);
-				}
 			} else {
 				state = State.SPIT;
 				timer.stop();
@@ -220,7 +218,16 @@ public class TwoScaleSameSide extends AutoMode {
 			
 		case SPIT:
 			if(timer.get() <= state.getTime()) {
-				wrist_.outtakeSlow();
+				double gyro_correction = 0.02 * (15 - navx_.getAngle());
+				if(Math.abs(gyro_correction) > 0.50) gyro_correction = 0.50 * Math.signum(gyro_correction);
+				drive_.leftSideControl(gyro_correction);
+				drive_.rightSideControl(-gyro_correction);
+
+				if(timer.get() >= 1.0) {
+					wrist_.outtakeValue(0.75);
+				} else {
+					wrist_.stop();
+				}
 			} else {
 				state = State.END;
 				timer.stop();

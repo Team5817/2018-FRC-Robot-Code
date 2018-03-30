@@ -3,8 +3,11 @@ package org.usfirst.frc.team5817.robot;
 import org.usfirst.frc.team5817.robot.auto.AutoMode;
 import org.usfirst.frc.team5817.robot.auto.OneSwitchOppositeSide;
 import org.usfirst.frc.team5817.robot.auto.OneSwitchSameSide;
+import org.usfirst.frc.team5817.robot.auto.TwoScaleSameSide;
 import org.usfirst.frc.team5817.robot.auto.OneScaleTwoSwitchSameSide;
 import org.usfirst.frc.team5817.robot.auto.AutoSelector;
+import org.usfirst.frc.team5817.robot.auto.AutoSelectorScale;
+import org.usfirst.frc.team5817.robot.auto.OneScaleOppositeSide;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -35,6 +38,9 @@ public class Robot extends IterativeRobot {
 	final AutoMode oneSwitchOppositeSide = new OneSwitchOppositeSide();
 	final AutoMode oneSwitchSameSide = new OneSwitchSameSide();
 	final AutoMode autoSelector = new AutoSelector();
+	final AutoMode twoScaleSameSide = new TwoScaleSameSide();
+	final AutoMode oneScaleOppositeSide = new OneScaleOppositeSide();
+	final AutoMode autoSelectorScale = new AutoSelectorScale();
 	AutoMode autoSelected;
 	SendableChooser<AutoMode> chooser = new SendableChooser<>();
 
@@ -44,6 +50,9 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("One Switch Opposite Side", oneSwitchOppositeSide);
 		chooser.addObject("One Switch Same Side", oneSwitchSameSide);
 		chooser.addObject("Auto Choosing", autoSelector);
+		chooser.addObject("TWo Scale Same Side", twoScaleSameSide);
+		chooser.addObject("One Scale Opposite Side", oneScaleOppositeSide);
+		chooser.addObject("Auto Choosing Scale", autoSelectorScale);
 		
 		SmartDashboard.putData("Auto choices", chooser);
 		
@@ -74,6 +83,10 @@ public class Robot extends IterativeRobot {
 	}
 	
 	public void disabledPeriodic(){
+		arm_.armMotorOne.configPeakOutputForward(1.0, 0);
+		arm_.armMotorOne.configPeakOutputReverse(-1.0, 0);
+		position = Position.MANUAL;
+		
 		if (driverController_.getStartButton2()){
 			arm_.zero();
 			wrist_.zero();
@@ -111,6 +124,9 @@ public class Robot extends IterativeRobot {
 	/**
 	 * This function is called periodically during operator control
 	 */
+	
+	boolean has_reconfigured_arm = false;
+	
 	@Override
 	public void teleopPeriodic() {
 		
@@ -130,52 +146,86 @@ public class Robot extends IterativeRobot {
 			drive_.zeroSensors();
 		}
 		
+		System.out.println(position);
+		
 		// Preset arm and wrist positions for scoring on different targets
 		if (driverController_.getButtonA2()) {
-			// Preset for picking up a cube off the ground		
-			position = Position.GROUND;
+			if(position != Position.FORWARD_SCALE) {
+				// Preset for picking up a cube off the ground		
+				position = Position.GROUND;
+			}
 		}else if(driverController_.getRightBumper2()){
-			position = Position.EXCHANGE;
+			if(position != Position.FORWARD_SCALE) {
+				position = Position.EXCHANGE;
+			}
 		}else if (driverController_.getButtonB2()){
-			// Preset for scoring in the switch	
-			position = Position.ZERO;
+			if(position != Position.FORWARD_SCALE && position != Position.FORWARD_SCALE_ZERO) {
+				// Preset for scoring in the switch	
+				position = Position.ZERO;
+			} else {
+				position = Position.FORWARD_SCALE_ZERO;
+			}
 		}else if (driverController_.getButtonX2()){
+			if(position != Position.FORWARD_SCALE) {
 			// Preset for scoring on the Scale
-			position = Position.SWITCH;
+				position = Position.SWITCH;
+			}
 		}else if (driverController_.getButtonY2()){
-			// Preset for scoring on the scale backwards
-			position = Position.SCALEBACK;
+			if(position != Position.FORWARD_SCALE) {
+				// Preset for scoring on the scale backwards
+				position = Position.SCALEBACK;
+			}
 		}else if(driverController_.getYRight2() > rightDeadZoneXY || driverController_.getYRight2() < rightNegativeDeadZoneXY){
 			position = Position.MANUAL;
 		}else if(driverController_.getYLeft2() > rightDeadZoneXY || driverController_.getYLeft2() < rightNegativeDeadZoneXY){
 			position = Position.MANUAL;
 		}else if(driverController_.getDpad2() == 0 || driverController_.getDpad() == 0){
-			position = Position.SCALE;
+			if(position == Position.ZERO) {
+				position = Position.FORWARD_SCALE;
+				System.out.println("lol");
+			}
 		}else if(driverController_.getDpad2() == 180 || driverController_.getDpad() == 180){
-			position = Position.LOW_PROFILE_SCALE;
+			if(position != Position.FORWARD_SCALE) {
+				position = Position.LOW_PROFILE_SCALE;
+			}
 		}
 		else if (driverController_.getButtonA()) {
-			// Preset for picking up a cube off the ground		
-			position = Position.GROUND;
-		}else if(driverController_.getRightBumper()){
-			position = Position.EXCHANGE;
+			if(position != Position.FORWARD_SCALE) {
+				// Preset for picking up a cube off the ground		
+				position = Position.GROUND;
+			}
 		}else if (driverController_.getButtonB()){
-			// Preset for scoring in the switch	
-			position = Position.ZERO;
+			if(position != Position.FORWARD_SCALE && position != Position.FORWARD_SCALE_ZERO) {
+				// Preset for scoring in the switch	
+				position = Position.ZERO;
+			} else {
+				position = Position.FORWARD_SCALE_ZERO;
+			}
 		}else if (driverController_.getButtonX()){
-			// Preset for scoring on the Scale
-			position = Position.SWITCH;
+			if(position != Position.FORWARD_SCALE) {
+				// Preset for scoring on the Scale
+				position = Position.SWITCH;
+			}
 		}else if (driverController_.getButtonY()){
-			// Preset for scoring on the scale backwards
-			position = Position.SCALEBACK;
+			if(position != Position.FORWARD_SCALE) {
+				// Preset for scoring on the scale backwards
+				position = Position.SCALEBACK;
+			}
 		}else if(driverController_.getLeftBumper2()){
-			position = Position.CLIMB;
+			if(position != Position.FORWARD_SCALE) {
+				position = Position.CLIMB;
+			}
 		}
 		
 		switch(position){
 		case ZERO:
 			arm_.setArmPosition(10);
 			wrist_.setWristPosition(10);
+			if(arm_.getArmPosition() < 500 && wrist_.getWristPosition() < 500 && !has_reconfigured_arm) {
+				arm_.armMotorOne.configPeakOutputForward(1.0, 0);
+				arm_.armMotorOne.configPeakOutputReverse(-1.0, 0);
+				has_reconfigured_arm = true;
+			}
 			break;
 		case GROUND:
 			if(arm_.getArmPosition() > 1000 && wrist_.getWristPosition() > 3000) {
@@ -239,6 +289,37 @@ public class Robot extends IterativeRobot {
 				wrist_.setWristPosition(2700);
 			}
 			break;
+		case FORWARD_SCALE:
+			if(arm_.getArmPosition() < 2000 || wrist_.getWristPosition() < 1860) {
+				arm_.setArmPosition(2500);
+				wrist_.setWristPosition(2100);
+			} else if(arm_.getArmPosition() < 4500 || wrist_.getWristPosition() < 4150) {
+				arm_.setArmPosition(5000);
+				if(arm_.getArmPosition() < 3450) {
+				wrist_.setWristPosition(2100);
+				} else {
+					wrist_.setWristPosition(4650);
+				}
+			} else if(arm_.getArmPosition() < 5000 || wrist_.getWristPosition() < 5315) {
+				arm_.setArmPosition(5500);
+				wrist_.setWristPosition(5815);
+			} else {
+				arm_.setArmPosition(7355);
+				wrist_.setWristPosition(10800);
+			}
+			break;
+		case FORWARD_SCALE_ZERO:
+			if(wrist_.getWristPosition() > 7000) {
+				arm_.setArmPosition(6500);
+				wrist_.setWristPosition(0);
+			} else {
+				arm_.armMotorOne.configPeakOutputForward(0.75, 0);
+				arm_.armMotorOne.configPeakOutputReverse(-0.75, 0);
+				has_reconfigured_arm = false;
+				position = Position.ZERO;
+			}
+			break;
+			
 		case CLIMB:
 			if(wrist_.getWristPosition() > 3000 && arm_.getArmPosition() < 1500){
 				wrist_.setWristPosition(50);
@@ -255,6 +336,8 @@ public class Robot extends IterativeRobot {
 			}
 			break;
 		case MANUAL:
+			arm_.armMotorOne.configPeakOutputForward(1.0, 0);
+			arm_.armMotorOne.configPeakOutputReverse(-1.0, 0);
 			// Manual Control of the wrist Movements
 						if (driverController_.getYRight2() > rightDeadZoneXY){
 							wrist_.manualWristControl(driverController_.getYRight2());
@@ -327,18 +410,12 @@ public class Robot extends IterativeRobot {
 		// Running the Intake wheels to pick up or release a cube
 		if (driverController_.getLeftTrigger() > 0.1){
 			wrist_.intake();
-		}else if(driverController_.getRightTrigger() > 0.1){
-			double value = Math.pow(driverController_.getRightTrigger(), 3) * 1.0;
-			value = (driverController_.getRightTrigger() < 0.7) ? 0.3 : value;
-			wrist_.outtakeValue(value);
+		} else if(driverController_.getRightBumper()) {
+			wrist_.outtakeValue(0.4);
+		} else if(driverController_.getRightTrigger() > 0.1){
+			wrist_.outtakeValue(0.7);
 		}else{
 			wrist_.stop();
-		}
-		
-		if (driverController_.getRightBumper()){
-			drive_.shiftDown();
-		}else if (driverController_.getLeftBumper()){
-			drive_.shiftUp();
 		}
 		
 		if(driverController_.getBackButton2()){

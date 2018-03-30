@@ -126,7 +126,7 @@ public class OneSwitchSameSide extends AutoMode {
 		
 		case SHOOT:
 			if(timer.get() <= state.getTime()) {
-				wrist_.outtakeSlow();
+				wrist_.outtakeValue(0.4);
 			} else {
 				wrist_.stop();
 				state = State.END;
