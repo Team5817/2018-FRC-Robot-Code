@@ -33,6 +33,8 @@ public class Robot extends IterativeRobot {
 	double leftSensitivityX = 0.6;								// 0 = Low Sensitivity
 	double leftSensitivityY = 0.6;
 	
+	int wristPosition = 0;
+	
 	
 	final AutoMode oneScaleTwoSwitchSameSide = new OneScaleTwoSwitchSameSide();
 	final AutoMode oneSwitchOppositeSide = new OneSwitchOppositeSide();
@@ -215,6 +217,18 @@ public class Robot extends IterativeRobot {
 			if(position != Position.FORWARD_SCALE) {
 				position = Position.CLIMB;
 			}
+		}else if(driverController_.onPressed(driverController_.getDpad() == 0)){
+			if (wristPosition < 3){
+				wristPosition ++;
+			}else{
+				wristPosition = 0;
+			}
+		}else if (driverController_.onPressed(driverController_.getDpad() == 180)){
+			if (wristPosition > 0){
+				wristPosition --;
+			}else{
+				wristPosition = 3;
+			}
 		}
 		
 		switch(position){
@@ -266,6 +280,27 @@ public class Robot extends IterativeRobot {
 			}
 			break;
 		case SCALEBACK:
+			int setPointWrist = 1850;
+			int setPointArm = 4400;
+			switch(wristPosition){
+			case 0:
+				setPointWrist = 1200;
+				setPointArm = 6100;
+				break;
+			case 1:
+				setPointWrist = 1850;
+				setPointArm = 4400;
+				break;
+			case 2:
+				setPointWrist = 1850;
+				setPointArm = 4400;
+				break;
+			case 3:
+				setPointWrist = 1850;
+				setPointArm = 4400;
+				break;
+			}
+			
 			if(wrist_.getWristPosition() > 3000 && arm_.getArmPosition() < 1500){
 				wrist_.setWristPosition(50);
 				arm_.setArmPosition(300);
@@ -273,8 +308,8 @@ public class Robot extends IterativeRobot {
 				arm_.setArmPosition(5000);
 				wrist_.setWristPosition(50);
 			}else{
-				arm_.setArmPosition(4400);
-				wrist_.setWristPosition(1850);
+				arm_.setArmPosition(setPointArm);
+				wrist_.setWristPosition(setPointWrist);
 			}
 			break;
 		case LOW_PROFILE_SCALE:
@@ -413,7 +448,7 @@ public class Robot extends IterativeRobot {
 		} else if(driverController_.getRightBumper()) {
 			wrist_.outtakeValue(0.4);
 		} else if(driverController_.getRightTrigger() > 0.1){
-			wrist_.outtakeValue(0.7);
+			wrist_.outtakeValue(1.0);
 		}else{
 			wrist_.stop();
 		}

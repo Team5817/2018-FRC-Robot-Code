@@ -10,8 +10,10 @@ private static Controller instance_ = new Controller();
 		return instance_;
 	}
 	public Joystick driverController;
-	
 	public Joystick codriverController;
+	
+	boolean lastValue;
+	boolean lastValueTwo;
 	
 	private Controller(){
 		driverController = new Joystick(0);
@@ -179,6 +181,20 @@ private static Controller instance_ = new Controller();
 	{
 		return codriverController.getRawButton(10);
 		//returns true when the right Joystick is pressed down otherwise false
+	}
+	public boolean onPressed(boolean value){
+		if (value != lastValue && value){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	public boolean onPressedTwo(boolean value){
+		if (value != lastValueTwo && value){
+			return true;
+		}else{
+			return false;
+		}
 	}
 }
 	
