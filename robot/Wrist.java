@@ -52,7 +52,7 @@ public class Wrist {
 		/* set closed loop gains in slot0 - see documentation */
 		wristMotion.selectProfileSlot(0, 0);
 		wristMotion.config_kF(0, 0.5, 10);
-		wristMotion.config_kP(0, 1.5, 10);
+		wristMotion.config_kP(0, 3.5, 10);
 		wristMotion.config_kI(0, 0.0, 10);
 		wristMotion.config_kD(0, 100, 10);
 		
@@ -65,7 +65,7 @@ public class Wrist {
 	}
 	
 	public void setWristPosition(int value){
-		double adjustedValue = value;
+		double adjustedValue = value * (5.0/8.0);
 		wristMotion.set(ControlMode.MotionMagic, adjustedValue);
 	}
 	
@@ -92,7 +92,7 @@ public class Wrist {
 		wristMotion.setSelectedSensorPosition(0, 0, 10);
 	}
 	public double getWristPosition(){
-		return ((double) wristMotion.getSensorCollection().getQuadraturePosition());
+		return ((double) wristMotion.getSensorCollection().getQuadraturePosition()) * (8.0/5.0);
 	}
 	
 	public void intake(){
